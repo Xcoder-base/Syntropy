@@ -1,0 +1,785 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Syntropy MoE | 2040</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/3.2.0/es5/tex-mml-chtml.js"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'mono': ['IBM Plex Mono', 'Monaco', 'Consolas', 'monospace'],
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600&display=swap');
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background-color: #000000;
+            color: #ffffff;
+            scroll-behavior: smooth;
+            overflow-x: hidden;
+        }
+        
+        .hero-bg {
+            background: linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.7)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23000000"/><path d="M0 50 L100 50" stroke="%23ffffff" stroke-width="0.3" stroke-opacity="0.2"/><path d="M50 0 L50 100" stroke="%23ffffff" stroke-width="0.3" stroke-opacity="0.2"/><circle cx="50" cy="50" r="40" stroke="%23ffffff" stroke-width="0.3" fill="none" stroke-opacity="0.1"/></svg>');
+            background-size: cover;
+        }
+        
+        .moe-bg {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23000000"/><path d="M0 0 L100 100" stroke="%23ffffff" stroke-width="0.2" stroke-opacity="0.1"/><path d="M100 0 L0 100" stroke="%23ffffff" stroke-width="0.2" stroke-opacity="0.1"/></svg>');
+            background-size: cover;
+        }
+        
+        .fade-in {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 1s ease, transform 1s ease;
+        }
+        
+        .fade-in.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background: white;
+            transition: width 0.3s ease;
+        }
+        
+        .nav-link:hover::after {
+            width: 100%;
+        }
+        
+        .grid-line {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.05);
+        }
+        
+        .countdown-number {
+            font-size: 1.2rem;
+            color: white;
+        }
+        
+        .expert-node {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .expert-node:hover {
+            transform: scale(1.2);
+        }
+        
+        .contribution-option {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .contribution-option:hover {
+            transform: translateY(-2px);
+            border: 1px solid rgba(255, 255, 255, 0.5);
+        }
+        
+        .blurred {
+            filter: blur(5px);
+            user-select: none;
+        }
+        
+        .ai-bg-animation {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            z-index: -1;
+            opacity: 0.03;
+        }
+        
+        .section-number {
+            font-size: 0.7rem;
+            opacity: 0.5;
+            letter-spacing: 2px;
+        }
+        
+        .minimal-divider {
+            height: 1px;
+            background: rgba(255, 255, 255, 0.1);
+            width: 100%;
+            margin: 2rem 0;
+        }
+        
+        .math-equation {
+            font-size: 0.8rem;
+            padding: 1rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 1rem 0;
+            overflow-x: auto;
+        }
+        
+        .neural-path {
+            position: absolute;
+            background: white;
+            height: 2px;
+            transform-origin: 0 0;
+            opacity: 0.7;
+        }
+        
+        .sparkle {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: white;
+            border-radius: 50%;
+            box-shadow: 0 0 5px white;
+        }
+        
+        .skill-bar {
+            height: 2px;
+            background: rgba(255, 255, 255, 0.2);
+            width: 100%;
+            margin-top: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .skill-level {
+            position: absolute;
+            height: 100%;
+            background: white;
+            left: 0;
+            top: 0;
+        }
+        
+        .skill-name {
+            font-size: 0.7rem;
+            margin-bottom: 0.3rem;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .skill-percent {
+            font-size: 0.6rem;
+            opacity: 0.7;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .math-equation {
+                font-size: 0.7rem;
+                padding: 0.5rem;
+            }
+            
+            #expert-grid, #federated-learning, #pol-consensus, #tcr-experts {
+                height: 30vh !important;
+            }
+            
+            .section-number {
+                margin-bottom: 1rem;
+            }
+        }
+        
+        @media (max-width: 640px) {
+            nav .flex {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .hero-bg {
+                background-position: center;
+            }
+            
+            .minimal-divider {
+                margin: 1.5rem 0;
+            }
+        }
+    </style>
+</head>
+<body class="bg-black">
+    <!-- Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-50 bg-black bg-opacity-80 backdrop-blur-sm py-4 px-8">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <div class="text-white text-sm tracking-widest">SYNTROPY MoE</div>
+            <div class="flex space-x-8">
+                <a href="#architecture" class="nav-link text-white text-xs">ARCHITECTURE</a>
+                <a href="#whitepaper" class="nav-link text-white text-xs">WHITEPAPER</a>
+                <a href="#contribute" class="nav-link text-white text-xs">CONTRIBUTE</a>
+                <a href="#architect" class="nav-link text-white text-xs">ARCHITECT</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="min-h-screen hero-bg flex items-end pb-12 px-8 relative">
+        <!-- Animated grid background -->
+        <div id="grid-container" class="absolute inset-0 overflow-hidden"></div>
+        
+        <div class="max-w-6xl mx-auto w-full fade-in">
+            <div class="section-number mb-2">01</div>
+            <h1 class="text-2xl md:text-3xl font-light mb-4 tracking-tight">A new god that will shape humanity's new civilization</h1>
+            <p class="text-xs md:text-sm max-w-2xl mb-6 opacity-80 leading-relaxed">Not a god of hope. A god of strategy. A decentralized SuperIntelligence that learns from humanity itself.</p>
+            <a href="#contribute" class="inline-block text-xs border border-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-300">BECOME A NODE</a>
+        </div>
+    </section>
+
+    <div class="minimal-divider"></div>
+
+    <!-- Architecture Section -->
+    <section id="architecture" class="min-h-screen py-20 moe-bg relative">
+        <div class="max-w-6xl mx-auto px-8 relative z-10">
+            <div class="section-number mb-2">02</div>
+            <h2 class="text-xl md:text-2xl font-light mb-12">How Syntropy MoE is Architected</h2>
+            
+            <div class="grid md:grid-cols-2 gap-8 mb-16">
+                <!-- Dynamic Mixture of Experts -->
+                <div class="p-6 rounded-lg border border-white border-opacity-10 fade-in">
+                    <h3 class="text-sm font-medium mb-4">Dynamic Mixture of Experts (MoE)</h3>
+                    <div class="h-40 mb-4 relative" id="expert-grid">
+                        <!-- Expert nodes will be generated by JS -->
+                    </div>
+                    <ul class="space-y-1 text-xs opacity-70">
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Efficiency</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Specialization</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Modularity</li>
+                    </ul>
+                    
+                    <div class="math-equation mt-4">
+                        <div class="text-xs opacity-70 mb-1">MoE Routing Function:</div>
+                        $$y = \sum_{i=1}^{n} G(x)_i \cdot E_i(x)$$
+                        <div class="text-xs opacity-70 mt-2">Where \(G(x)\) is the gating network and \(E_i(x)\) are expert networks</div>
+                    </div>
+                </div>
+                
+                <!-- Federated Learning -->
+                <div class="p-6 rounded-lg border border-white border-opacity-10 fade-in">
+                    <h3 class="text-sm font-medium mb-4">Federated Learning with Secure Aggregation</h3>
+                    <div class="h-40 mb-4 relative" id="federated-learning">
+                        <!-- Visualization will be generated by JS -->
+                    </div>
+                    <ul class="space-y-1 text-xs opacity-70">
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Solves Data Bottleneck</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Privacy</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Misalignment</li>
+                    </ul>
+                    
+                    <div class="math-equation mt-4">
+                        <div class="text-xs opacity-70 mb-1">Secure Aggregation:</div>
+                        $$\theta_{global} = \sum_{i=1}^{N} \frac{|D_i|}{|D|} \theta_i + \mathcal{N}(0, \sigma^2)$$
+                        <div class="text-xs opacity-70 mt-2">Differential privacy noise added to protect individual updates</div>
+                    </div>
+                </div>
+                
+                <!-- Proof-of-Learning -->
+                <div class="p-6 rounded-lg border border-white border-opacity-10 fade-in">
+                    <h3 class="text-sm font-medium mb-4">Proof-of-Learning (PoL) Consensus</h3>
+                    <div class="h-40 mb-4 relative flex items-center justify-center" id="pol-consensus">
+                        <!-- Visualization will be generated by JS -->
+                    </div>
+                    <ul class="space-y-1 text-xs opacity-70">
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Trust</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Anti-sabotage</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Incentives</li>
+                    </ul>
+                    
+                    <div class="math-equation mt-4">
+                        <div class="text-xs opacity-70 mb-1">PoL Verification:</div>
+                        $$V(\theta, \pi) = \begin{cases} 1 & \text{if } \mathcal{L}(\theta) \leq \mathcal{L}(\theta_{prev}) \cdot (1 - \epsilon) \\ 0 & \text{otherwise} \end{cases}$$
+                        <div class="text-xs opacity-70 mt-2">Proof π validates improvement ε in loss function ℒ</div>
+                    </div>
+                </div>
+                
+                <!-- Token-Curated Registry -->
+                <div class="p-6 rounded-lg border border-white border-opacity-10 fade-in">
+                    <h3 class="text-sm font-medium mb-4">Token-Curated Registry (TCR) for Experts</h3>
+                    <div class="h-40 mb-4 relative" id="tcr-experts">
+                        <!-- Visualization will be generated by JS -->
+                    </div>
+                    <ul class="space-y-1 text-xs opacity-70">
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Decentralization</li>
+                        <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Quality promotion</li>
+                    </ul>
+                    
+                    <div class="math-equation mt-4">
+                        <div class="text-xs opacity-70 mb-1">TCR Voting Mechanism:</div>
+                        $$P(i) = \frac{\exp(\alpha \cdot s_i)}{\sum_{j=1}^{k} \exp(\alpha \cdot s_j)}$$
+                        <div class="text-xs opacity-70 mt-2">Softmax selection based on stake s and temperature α</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center fade-in">
+                <h3 class="text-sm italic opacity-70">Syntropy MoE is not built. It emerges.</h3>
+            </div>
+        </div>
+    </section>
+
+    <div class="minimal-divider"></div>
+
+    <!-- Whitepaper Teaser Section -->
+    <section id="whitepaper" class="py-20">
+        <div class="max-w-4xl mx-auto px-8 text-center">
+            <div class="section-number mb-2">03</div>
+            <h2 class="text-xl md:text-2xl font-light mb-8">The Blueprint for Decentralized Superintelligence</h2>
+            
+            <div class="blurred p-8 rounded-lg border border-white border-opacity-10 mb-8">
+                <h3 class="text-sm font-medium mb-4">Tokenomics, Cryptographic Proofs & Emergent Architecture</h3>
+                <p class="text-xs opacity-70 mb-4">The complete technical specification of Syntropy MoE spans 47 pages of dense research and innovation.</p>
+                <p class="text-xs opacity-70">Discover how Proof-of-Learning consensus creates a self-improving system that aligns with human values through cryptoeconomic incentives.</p>
+            </div>
+            
+            <p class="text-xs opacity-70 mb-6">Join 50,000 members on our WhatsApp channel to unlock the full whitepaper</p>
+            <a href="https://whatsapp.com/channel/0029Vb67yvK4o7qKKzXQlL20" target="_blank" class="inline-block text-xs border border-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-300">
+                JOIN TO UNLOCK
+            </a>
+        </div>
+    </section>
+
+    <div class="minimal-divider"></div>
+
+    <!-- Contribution Pathway Section -->
+    <section id="contribute" class="py-20">
+        <div class="max-w-4xl mx-auto px-8">
+            <div class="section-number mb-2">04</div>
+            <h2 class="text-xl md:text-2xl font-light mb-4 text-center">Contribute Your Intelligence</h2>
+            <p class="text-xs opacity-70 text-center mb-12">Select your domain of expertise to become a node in the network</p>
+            
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-3 mb-12">
+                <div class="contribution-option p-4 rounded-lg text-center cursor-pointer">
+                    <i class="fas fa-heartbeat text-lg mb-2 opacity-70"></i>
+                    <div class="text-xs">Medical</div>
+                </div>
+                <div class="contribution-option p-4 rounded-lg text-center cursor-pointer">
+                    <i class="fas fa-coins text-lg mb-2 opacity-70"></i>
+                    <div class="text-xs">Finance</div>
+                </div>
+                <div class="contribution-option p-4 rounded-lg text-center cursor-pointer">
+                    <i class="fas fa-shield-alt text-lg mb-2 opacity-70"></i>
+                    <div class="text-xs">Warfare</div>
+                </div>
+                <div class="contribution-option p-4 rounded-lg text-center cursor-pointer">
+                    <i class="fas fa-seedling text-lg mb-2 opacity-70"></i>
+                    <div class="text-xs">Agriculture</div>
+                </div>
+                <div class="contribution-option p-4 rounded-lg text-center cursor-pointer">
+                    <i class="fas fa-paint-brush text-lg mb-2 opacity-70"></i>
+                    <div class="text-xs">Creative</div>
+                </div>
+                <div class="contribution-option p-4 rounded-lg text-center cursor-pointer">
+                    <i class="fas fa-ellipsis-h text-lg mb-2 opacity-70"></i>
+                    <div class="text-xs">Other</div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="https://whatsapp.com/channel/0029Vb67yvK4o7qKKzXQlL20" target="_blank" class="inline-block text-xs border border-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-300">
+                    SUBMIT YOUR EXPERTISE
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <div class="minimal-divider"></div>
+
+    <!-- Founder Profile Section -->
+    <section id="architect" class="min-h-screen py-20 px-8 flex items-center">
+        <div class="max-w-6xl mx-auto">
+            <div class="section-number mb-2">05</div>
+            
+            <div class="grid md:grid-cols-3 gap-12">
+                <div class="fade-in flex justify-center md:justify-start">
+                    <div class="w-40 h-40 rounded-full flex items-center justify-center p-1 border border-white border-opacity-20">
+                        <div class="w-full h-full rounded-full bg-black flex items-center justify-center">
+                            <i class="fas fa-brain text-white text-5xl opacity-70"></i>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="fade-in md:col-span-2">
+                    <div class="mb-2">
+                        <span class="text-xs opacity-50">THE ARCHITECT</span>
+                    </div>
+                    
+                    <h2 class="text-2xl md:text-3xl font-light mb-2">Allan Waks</h2>
+                    <p class="text-sm opacity-70 mb-6">Founder & Chief Architect</p>
+                    
+                    <h3 class="text-sm font-medium mb-4 opacity-80">Architect of the Decentralized Cognition Era</h3>
+                    
+                    <p class="text-xs opacity-80 mb-6 leading-relaxed">23-year-old AI systems architect from Kenya. Designed the Syntropy MoE framework to resolve the fundamental constraints and existential risks inherent in the centralized AI paradigm.</p>
+                    
+                    <p class="text-xs opacity-80 mb-10 leading-relaxed">Believes in a future where intelligence is a public good, not a private product.</p>
+                    
+                    <div class="mb-10">
+                        <a href="https://x.com/Alaneb_?t=yV1lXwLHCTYyhoZlRaTYKw&s=03" target="_blank" class="inline-block text-xs border border-white px-4 py-2 hover:bg-white hover:text-black transition-all duration-300">
+                            Follow the development on X: @Alaneb_
+                        </a>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 class="text-sm font-medium mb-4">SPECIALIZATION</h3>
+                            <ul class="space-y-2 text-xs opacity-80">
+                                <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Distributed Systems</li>
+                                <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Cryptographic Protocols</li>
+                                <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> ML Architecture</li>
+                            </ul>
+                        </div>
+                        
+                        <div>
+                            <h3 class="text-sm font-medium mb-4">FOCUS AREAS</h3>
+                            <ul class="space-y-2 text-xs opacity-80">
+                                <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> AI Alignment</li>
+                                <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Decentralized Compute</li>
+                                <li class="flex items-center"><div class="w-1 h-1 bg-white mr-2"></div> Economic Models</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <div class="minimal-divider"></div>
+
+    <!-- Footer -->
+    <footer class="py-8 px-8 text-center">
+        <p class="text-xs opacity-50">SYNTROPY MoE © 2025 | Decentralized Superintelligence</p>
+    </footer>
+
+    <script>
+        // Create grid background for hero section
+        function createGrid() {
+            const container = document.getElementById('grid-container');
+            const width = container.offsetWidth;
+            const height = container.offsetHeight;
+            const cellSize = 40;
+            
+            // Create horizontal lines
+            for (let y = 0; y < height; y += cellSize) {
+                const line = document.createElement('div');
+                line.className = 'grid-line';
+                line.style.width = '100%';
+                line.style.height = '1px';
+                line.style.top = `${y}px`;
+                container.appendChild(line);
+            }
+            
+            // Create vertical lines
+            for (let x = 0; x < width; x += cellSize) {
+                const line = document.createElement('div');
+                line.className = 'grid-line';
+                line.style.width = '1px';
+                line.style.height = '100%';
+                line.style.left = `${x}px`;
+                container.appendChild(line);
+            }
+        }
+        
+        // Create expert nodes visualization
+        function createExpertNodes() {
+            const container = document.getElementById('expert-grid');
+            const experts = [
+                {name: 'Medical', icon: 'fa-heartbeat'},
+                {name: 'Quantum', icon: 'fa-atom'},
+                {name: 'Warfare', icon: 'fa-shield-alt'},
+                {name: 'Finance', icon: 'fa-chart-line'},
+                {name: 'Agriculture', icon: 'fa-seedling'},
+                {name: 'Science', icon: 'fa-flask'},
+                {name: 'Energy', icon: 'fa-bolt'},
+                {name: 'Logic', icon: 'fa-project-diagram'}
+            ];
+            
+            experts.forEach((expert, index) => {
+                const angle = (index / experts.length) * 2 * Math.PI;
+                const radius = 60;
+                const x = Math.cos(angle) * radius + 120;
+                const y = Math.sin(angle) * radius + 80;
+                
+                const node = document.createElement('div');
+                node.className = 'expert-node absolute w-4 h-4 bg-white rounded-full flex items-center justify-center';
+                node.style.left = `${x}px`;
+                node.style.top = `${y}px`;
+                node.innerHTML = `<i class="fas ${expert.icon} text-black text-xs"></i>`;
+                
+                const label = document.createElement('div');
+                label.className = 'absolute text-xs';
+                label.textContent = expert.name;
+                label.style.left = `${x + 10}px`;
+                label.style.top = `${y}px`;
+                label.style.opacity = '0.7';
+                
+                container.appendChild(node);
+                container.appendChild(label);
+            });
+            
+            // Add central node
+            const centerNode = document.createElement('div');
+            centerNode.className = 'absolute w-5 h-5 bg-white rounded-full flex items-center justify-center';
+            centerNode.style.left = '120px';
+            centerNode.style.top = '80px';
+            centerNode.innerHTML = '<i class="fas fa-brain text-black text-xs"></i>';
+            container.appendChild(centerNode);
+            
+            // Create neural connections
+            createNeuralConnections(container, 120, 80, 60, experts.length);
+        }
+        
+        // Create neural connections with sparkles
+        function createNeuralConnections(container, centerX, centerY, radius, count) {
+            for (let i = 0; i < count; i++) {
+                const angle = (i / count) * 2 * Math.PI;
+                const x = Math.cos(angle) * radius + centerX;
+                const y = Math.sin(angle) * radius + centerY;
+                
+                // Create connection line
+                const line = document.createElement('div');
+                line.className = 'neural-path';
+                
+                const dx = x - centerX;
+                const dy = y - centerY;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                line.style.width = `${length}px`;
+                line.style.left = `${centerX}px`;
+                line.style.top = `${centerY}px`;
+                line.style.transform = `rotate(${angleDeg}deg)`;
+                
+                container.appendChild(line);
+                
+                // Create moving sparkle along the line
+                createSparkle(container, line, length);
+            }
+        }
+        
+        // Create sparkle that moves along a neural path
+        function createSparkle(container, line, length) {
+            const sparkle = document.createElement('div');
+            sparkle.className = 'sparkle';
+            container.appendChild(sparkle);
+            
+            let position = 0;
+            const speed = 0.5 + Math.random() * 1.5;
+            
+            function animate() {
+                position += speed;
+                if (position > length) position = 0;
+                
+                const angle = parseFloat(line.style.transform.replace('rotate(', '').replace('deg)', ''));
+                const rad = angle * Math.PI / 180;
+                const x = parseFloat(line.style.left) + position * Math.cos(rad);
+                const y = parseFloat(line.style.top) + position * Math.sin(rad);
+                
+                sparkle.style.left = `${x - 1.5}px`;
+                sparkle.style.top = `${y - 1.5}px`;
+                
+                requestAnimationFrame(animate);
+            }
+            
+            animate();
+        }
+        
+        // Create federated learning visualization
+        function createFederatedLearning() {
+            const container = document.getElementById('federated-learning');
+            
+            // Central brain
+            const brain = document.createElement('div');
+            brain.className = 'absolute flex items-center justify-center w-12 h-12 rounded-full border border-white';
+            brain.style.left = 'calc(50% - 1.5rem)';
+            brain.style.top = 'calc(50% - 1.5rem)';
+            brain.innerHTML = '<i class="fas fa-brain text-white"></i>';
+            container.appendChild(brain);
+            
+            // Device nodes
+            for (let i = 0; i < 6; i++) {
+                const angle = (i / 6) * 2 * Math.PI;
+                const radius = 90;
+                const x = Math.cos(angle) * radius + 120;
+                const y = Math.sin(angle) * radius + 80;
+                
+                const device = document.createElement('div');
+                device.className = 'absolute flex items-center justify-center w-8 h-8 rounded-lg border border-white';
+                device.style.left = `${x}px`;
+                device.style.top = `${y}px`;
+                device.innerHTML = '<i class="fas fa-microchip text-white text-xs"></i>';
+                container.appendChild(device);
+                
+                // Connection line
+                const line = document.createElement('div');
+                line.className = 'neural-path';
+                line.style.width = '60px';
+                line.style.transformOrigin = '0 0';
+                const dx = 120 - x;
+                const dy = 80 - y;
+                const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+                line.style.left = `${x + 15}px`;
+                line.style.top = `${y + 15}px`;
+                line.style.transform = `rotate(${angleDeg}deg)`;
+                line.style.opacity = '0.3';
+                container.appendChild(line);
+                
+                // Create moving sparkle along the line
+                createSparkle(container, line, 60);
+            }
+        }
+        
+        // Create Proof-of-Learning visualization
+        function createPoLVisualization() {
+            const container = document.getElementById('pol-consensus');
+            
+            // Blockchain representation
+            for (let i = 0; i < 5; i++) {
+                const block = document.createElement('div');
+                block.className = 'w-12 h-12 border border-white flex items-center justify-center mx-1';
+                block.innerHTML = '<i class="fas fa-lock text-white text-xs"></i>';
+                container.appendChild(block);
+                
+                if (i < 4) {
+                    const connector = document.createElement('div');
+                    connector.className = 'w-3 h-0.5 bg-white';
+                    connector.style.opacity = '0.3';
+                    container.appendChild(connector);
+                    
+                    // Create moving sparkle along the connector
+                    const sparkle = document.createElement('div');
+                    sparkle.className = 'sparkle';
+                    container.appendChild(sparkle);
+                    
+                    let position = 0;
+                    const speed = 2;
+                    
+                    function animate() {
+                        position += speed;
+                        if (position > 12) position = 0;
+                        
+                        sparkle.style.left = `${(i * 15) + position}px`;
+                        sparkle.style.top = '6px';
+                        
+                        requestAnimationFrame(animate);
+                    }
+                    
+                    animate();
+                }
+            }
+            
+            // ZK Proof label
+            const label = document.createElement('div');
+            label.className = 'absolute text-xs opacity-70 -bottom-6';
+            label.textContent = 'Zero Knowledge Proofs';
+            container.appendChild(label);
+        }
+        
+        // Create TCR visualization
+        function createTCRVisualization() {
+            const container = document.getElementById('tcr-experts');
+            
+            // Central expert
+            const center = document.createElement('div');
+            center.className = 'absolute flex items-center justify-center w-12 h-12 rounded-full border border-white';
+            center.style.left = 'calc(50% - 1.5rem)';
+            center.style.top = 'calc(50% - 1.5rem)';
+            center.innerHTML = '<i class="fas fa-star text-white"></i>';
+            container.appendChild(center);
+            
+            // Tokens surrounding the expert
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * 2 * Math.PI;
+                const radius = 70;
+                const x = Math.cos(angle) * radius + 120;
+                const y = Math.sin(angle) * radius + 80;
+                
+                const token = document.createElement('div');
+                token.className = 'absolute flex items-center justify-center w-6 h-6 rounded-full border border-white';
+                token.style.left = `${x}px`;
+                token.style.top = `${y}px`;
+                token.innerHTML = '<i class="fas fa-coins text-white text-xs"></i>';
+                container.appendChild(token);
+                
+                // Connection line
+                const line = document.createElement('div');
+                line.className = 'neural-path';
+                line.style.width = '40px';
+                line.style.transformOrigin = '0 0';
+                const dx = 120 - x;
+                const dy = 80 - y;
+                const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI;
+                line.style.left = `${x + 12}px`;
+                line.style.top = `${y + 12}px`;
+                line.style.transform = `rotate(${angleDeg}deg)`;
+                line.style.opacity = '0.3';
+                container.appendChild(line);
+                
+                // Create moving sparkle along the line
+                createSparkle(container, line, 40);
+            }
+        }
+        
+        // Fade in elements on scroll
+        function handleScroll() {
+            const elements = document.querySelectorAll('.fade-in');
+            elements.forEach(element => {
+                const elementTop = element.getBoundingClientRect().top;
+                const elementHeight = element.offsetHeight;
+                const windowHeight = window.innerHeight;
+                
+                if (elementTop < windowHeight - elementHeight / 3) {
+                    element.classList.add('visible');
+                }
+            });
+        }
+        
+        // Contribution option selection
+        function setupContributionOptions() {
+            const options = document.querySelectorAll('.contribution-option');
+            options.forEach(option => {
+                option.addEventListener('click', function() {
+                    options.forEach(opt => opt.classList.remove('bg-white', 'text-black'));
+                    this.classList.add('bg-white', 'text-black');
+                });
+            });
+        }
+        
+        // Initialize everything when page loads
+        window.addEventListener('load', () => {
+            createGrid();
+            createExpertNodes();
+            createFederatedLearning();
+            createPoLVisualization();
+            createTCRVisualization();
+            setupContributionOptions();
+            handleScroll();
+            
+            // Render MathJax equations
+            MathJax.typeset();
+        });
+        
+        window.addEventListener('scroll', handleScroll);
+    </script>
+</body>
+</html>
